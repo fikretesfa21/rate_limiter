@@ -36,3 +36,24 @@ func (c *Counter) Allow(cfg Config) bool {
 
 	return false
 }
+
+type RateLimiter struct {
+	cfg     Config
+	counter Counter
+}
+
+func New(limit int, window time.Duration) *RateLimiter {
+	return &RateLimiter{
+		cfg: Config{
+			Limit:  limit,
+			Window: window,
+		},
+		counter: Counter{
+			windowStart: time.Now(),
+		},
+	}
+}
+
+func (rl *RateLimiter) Allow() bool {
+	return rl.counter.Allow(rl.cfg)
+}
