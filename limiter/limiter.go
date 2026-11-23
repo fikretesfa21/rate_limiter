@@ -1,6 +1,9 @@
 package limiter
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Config struct {
 	Limit  int
@@ -8,6 +11,7 @@ type Config struct {
 }
 
 type Counter struct {
+	mu          sync.Mutex
 	count       int
 	windowStart time.Time
 }
@@ -20,6 +24,9 @@ func (c *Counter) resetIfExpired(window time.Duration) {
 }
 
 func (c *Counter) Allow(cfg Config) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.resetIfExpired(cfg.Window)
 
 	if c.count < cfg.Limit {
